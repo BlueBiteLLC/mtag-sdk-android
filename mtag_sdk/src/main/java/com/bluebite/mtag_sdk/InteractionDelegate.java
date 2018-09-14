@@ -15,6 +15,22 @@
 
 package com.bluebite.mtag_sdk;
 
-public interface InteractionDelegate {
 
+import org.json.JSONObject;
+
+/*
+* Implementation which will be called by the SDK upon success/failure to authenticate a tag.
+*/
+public interface InteractionDelegate {
+    /*
+    * Called when an Interaction has been successfully registered with the BlueBite API.
+    * */
+    public void interactionDataWasReceived(JSONObject results);
+
+    /*
+    * Called when an Interaction has failed to be registered with the BlueBite API.
+    *
+    * This could be caused by a general API failure, an invalid URL, or a general Volley failure.
+    * */
+    public void interactionDidFail(String error);
 }
