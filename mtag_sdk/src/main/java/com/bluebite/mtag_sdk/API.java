@@ -128,7 +128,52 @@ public class API {
     }
 
     private JSONObject parseResponse(JSONObject response) {
+        JSONObject formattedResponse = new JSONObject();
+        try {
+           JSONObject device = response.getJSONObject("device");
+            formattedResponse.put("deviceCountry", device.getString("country"));
+        } catch (JSONException e) {
+            try {
+                formattedResponse.put("deviceCountry", null);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+        }
 
+        // get tagverified
+        try {
+            formattedResponse.put("tagVerified", response.getString("tag_verified"));
+        } catch (JSONException e) {
+            try {
+                formattedResponse.put("tagVerified", null);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        // get the location info if any
+        try {
+            formattedResponse.put("location", response.getJSONObject("location"));
+        } catch (JSONException e) {
+            try {
+                formattedResponse.put("location", null);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        // get the campaign info if any
+        try {
+            formattedResponse.put("campaigns", response.getJSONArray("campaigns"));
+        } catch (JSONException e) {
+            try {
+                formattedResponse.put("campaigns", null);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        return formattedResponse;
     }
 
     /**
