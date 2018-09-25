@@ -1,5 +1,7 @@
 package com.bluebite.mtagsdk;
 
+import android.graphics.Color;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import com.bluebite.mtag_sdk.API;
 import com.bluebite.mtag_sdk.InteractionDelegate;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements InteractionDelegate {
@@ -18,6 +21,7 @@ public class MainActivity extends AppCompatActivity implements InteractionDelega
     TextView textView;
     Button basicTagButton;
     Button rollingTagButton;
+    ConstraintLayout bg;
 
     private API api;
 
@@ -25,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements InteractionDelega
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        bg = findViewById(R.id.background);
 
         api = new API(this, this);
 
@@ -52,6 +58,19 @@ public class MainActivity extends AppCompatActivity implements InteractionDelega
     public void interactionDataWasReceived(JSONObject results) {
         Log.i(TAG, "Interaction received: " + results);
         textView.setText("" + results);
+
+        try {
+            if (results.getBoolean("tag_verified")) {
+                bg.setBackgroundColor(Color.GREEN);
+            } else {
+                bg.setBackgroundColor(Color.RED);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "No tag_verified key in results");
+            bg.setBackgroundColor(Color.RED);
+            e.printStackTrace();
+        }
+
     }
 
     @Override

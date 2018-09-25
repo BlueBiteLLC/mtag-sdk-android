@@ -19,18 +19,18 @@ package com.bluebite.mtag_sdk;
 import android.content.Context;
 import android.util.Log;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+
+import cz.msebera.android.httpclient.Header;
 
 
 /*
@@ -41,6 +41,7 @@ public class API {
 
     private InteractionDelegate mDelegate;
     private Context mContext;
+    private AsyncHttpClient client = new AsyncHttpClient();
 
     private static int SMT_COUNTER_SEGMENTS = 5;
     private static int MTAG_ID_B10_LENGTH = 8;
@@ -90,10 +91,11 @@ public class API {
             mDelegate.interactionDidFail("Invalid URL format for Interaction URL: " + url);
         }
 
-        registerInteraction(mTagId, params);
+        RequestParams requestParams = new RequestParams(params);
+        registerInteraction(mTagId, requestParams);
     }
 
-    private void registerInteraction(String mTagId, HashMap<String, String> params) {
+    private void registerInteraction(String mTagId, RequestParams params) {
         Log.d(TAG, "[registerInteraction]mTagId: " + mTagId + " params: " + params.toString());
 
         params.put("tag_id", mTagId);
@@ -103,31 +105,32 @@ public class API {
 
         String targetUrl = "https://api.mtag.io/v2/interactions";
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                targetUrl,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG, "Interactions response: " + response);
-                        JSONObject parsedResponse = parseResponse(response);
-                        mDelegate.interactionDataWasReceived(response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Interactions response error: " + error);
-                        mDelegate.interactionDidFail(
-                                error.getLocalizedMessage());
-                    }
-                });
-        request.setShouldCache(false);
-        Volley.newRequestQueue(mContext).add(request);
+        JsonHttpResponseHandler responseHandler = new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                Log.d(TAG, "Interactions response: " + response);
+                JSONObject parsedResponse = handleResponse(response);
+                mDelegate.interactionDataWasReceived(parsedResponse);
+            }
+
+            // TODO: clean up error handling in these responses
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                Log.e(TAG, "DID FAIL with status code: " + statusCode + " And cause " + errorResponse.toString());
+                mDelegate.interactionDidFail(errorResponse.toString());
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                Log.e(TAG, "DID FAIL with status code: " + statusCode + " And cause " + responseString);
+                mDelegate.interactionDidFail(responseString);
+            }
+        };
+
+        client.post(targetUrl, params, responseHandler);
     }
 
-    private JSONObject parseResponse(JSONObject response) {
+    private JSONObject handleResponse(JSONObject response) {
         JSONObject formattedResponse = new JSONObject();
         try {
            JSONObject device = response.getJSONObject("device");
