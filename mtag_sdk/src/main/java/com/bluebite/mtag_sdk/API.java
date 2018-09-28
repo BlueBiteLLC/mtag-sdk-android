@@ -89,6 +89,7 @@ public class API {
         }
         else {
             mDelegate.interactionDidFail("Invalid URL format for Interaction URL: " + url);
+            return;
         }
 
         RequestParams requestParams = new RequestParams(params);
