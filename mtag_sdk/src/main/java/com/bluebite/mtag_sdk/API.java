@@ -40,7 +40,6 @@ public class API {
     public static final String TAG = API.class.getSimpleName();
 
     private InteractionDelegate mDelegate;
-    private Context mContext;
     private AsyncHttpClient client = new AsyncHttpClient();
 
     public static int SMT_COUNTER_SEGMENTS = 5;
@@ -50,9 +49,8 @@ public class API {
 
     public static String ERROR_NON_AUTH_URL = "Invalid URL format for Interaction URL: ";
 
-    public API(InteractionDelegate mDelegate, Context mContext) {
+    public API(InteractionDelegate mDelegate) {
         this.mDelegate = mDelegate;
-        this.mContext = mContext;
     }
 
     /*
@@ -101,7 +99,7 @@ public class API {
         registerInteraction(mTagId, requestParams);
     }
 
-    private void registerInteraction(String mTagId, RequestParams params) {
+    protected void registerInteraction(String mTagId, RequestParams params) {
         Log.d(TAG, "[registerInteraction]mTagId: " + mTagId + " params: " + params.toString());
 
         params.put("tag_id", mTagId);
@@ -195,7 +193,7 @@ public class API {
 
         //grab url query parameters
         String[] urlQueryParams = urlParts[urlParts.length - 1].split("\\?")[1].split("&");
-        Log.d(TAG, "AuthUrl urlQUeryParams: " + Arrays.toString(urlQueryParams));
+        Log.d(TAG, "AuthUrl urlQueryParams: " + Arrays.toString(urlQueryParams));
 
 
         for (String urlArg : urlQueryParams) {
@@ -215,6 +213,7 @@ public class API {
     private HashMap<String,String> handleCounterUrl(String[] urlParts) {
         Log.d(TAG, "handleCounterUrl" + Arrays.toString(urlParts));
         String urlTail = urlParts[urlParts.length - 1];
+        // trim any extra query params
         String fullVID = urlTail.split("\\?")[0];
         HashMap<String, String> params = new HashMap<>();
         params.put("vid", fullVID);
@@ -225,7 +224,7 @@ public class API {
     /*
      * Parses the mTag ID from the Interaction URL.
      * */
-    private String parseMTagId(String url) {
+    protected String parseMTagId(String url) {
         String[] urlParts = url.split("/");
         String urlTail = urlParts[urlParts.length - 1];
         String idAndTechType;
@@ -249,7 +248,7 @@ public class API {
         return convertIdToBase10(mTagId);
     }
 
-    private String convertIdToBase10(String mTagId) {
+    protected String convertIdToBase10(String mTagId) {
         // assume its b10 even though it probably isn't
         int idAsBase10;
 
