@@ -3,7 +3,10 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 28
 
-
+    // keep android from complaining about Log not being mocked
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 
     defaultConfig {
         minSdkVersion 23
@@ -31,7 +34,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
-//    implementation 'com.android.volley:volley:1.1.1'
     implementation 'com.loopj.android:android-async-http:1.4.9'
 }
