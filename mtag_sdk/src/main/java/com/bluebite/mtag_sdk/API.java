@@ -34,8 +34,8 @@ import cz.msebera.android.httpclient.Header;
 
 
 /*
-* Handles parsing, verifying, and passing results from an interaction to the InteractionDelegate.
-* */
+ * Handles parsing, verifying, and passing results from an interaction to the InteractionDelegate.
+ * */
 public class API {
     public static final String TAG = API.class.getSimpleName();
 
@@ -43,28 +43,29 @@ public class API {
     private Context mContext;
     private AsyncHttpClient client = new AsyncHttpClient();
 
-    private static int SMT_COUNTER_SEGMENTS = 5;
+    public static int SMT_COUNTER_SEGMENTS = 5;
     private static int MTAG_ID_B10_LENGTH = 8;
     private static int MTAG_ID_B36_LENGTH = 6;
     private static int TECH_PREFIX_LENGTH = 1;
+
+    public static String ERROR_NON_AUTH_URL = "Invalid URL format for Interaction URL: ";
 
     public API(InteractionDelegate mDelegate, Context mContext) {
         this.mDelegate = mDelegate;
         this.mContext = mContext;
     }
 
-    // TODO: check user agent
     /*
-    * Method called by an activity which will handle parsing and verifying the provided
-    * interaction url.
-    *
-    * Method does not return, instead passing its results to the mDelegate.
-    * */
+     * Method called by an activity which will handle parsing and verifying the provided
+     * interaction url.
+     *
+     * Method does not return, instead passing its results to the mDelegate.
+     * */
     public void interactionWasReceived(String url) {
         Log.v(TAG, "Interaction was received with url: " + url);
         String mTagId = parseMTagId(url);
         if (mTagId.equals("")) {
-            mDelegate.interactionDidFail("Unable to parse mTag ID from Interaction URL: " + url);
+            mDelegate.interactionDidFail(ERROR_NON_AUTH_URL + url);
         }
 
         String[] urlParts = url.split("/");
@@ -72,9 +73,11 @@ public class API {
 
         HashMap<String,String> params = new HashMap<>();
         if (urlParts.length == SMT_COUNTER_SEGMENTS) { // Counter URL
+            Log.d(TAG, "SMT Counter");
             params = handleCounterUrl(urlParts);
         }
         else if (urlTail.contains("&sig")) { // Auth Url
+            Log.d(TAG, "Auth RC");
             HashMap<String, String> expectedQueryParams = new HashMap<>();
             expectedQueryParams.put("id", "uid");
             expectedQueryParams.put("num", "tag_version");
@@ -82,13 +85,15 @@ public class API {
             params = handleAuthOrHidUrl(urlParts, expectedQueryParams);
         }
         else if (urlTail.contains("&tac")) { // HID URL
+            Log.d(TAG, "HID RC");
             HashMap<String, String> expectedQueryParams = new HashMap<>();
             expectedQueryParams.put("tagID", "hid");
             expectedQueryParams.put("tac", "vid");
             params = handleAuthOrHidUrl(urlParts, expectedQueryParams);
         }
         else {
-            mDelegate.interactionDidFail("Invalid URL format for Interaction URL: " + url);
+            Log.d(TAG, "NO AUTH");
+            mDelegate.interactionDidFail(ERROR_NON_AUTH_URL + url);
             return;
         }
 
@@ -134,7 +139,7 @@ public class API {
     private JSONObject handleResponse(JSONObject response) {
         JSONObject formattedResponse = new JSONObject();
         try {
-           JSONObject device = response.getJSONObject("device");
+            JSONObject device = response.getJSONObject("device");
             formattedResponse.put("deviceCountry", device.getString("country"));
         } catch (JSONException e) {
             try {
@@ -205,8 +210,8 @@ public class API {
     }
 
     /**
-    * Handles parsing the relevant query parameters for a counter URL.
-    * */
+     * Handles parsing the relevant query parameters for a counter URL.
+     * */
     private HashMap<String,String> handleCounterUrl(String[] urlParts) {
         Log.d(TAG, "handleCounterUrl" + Arrays.toString(urlParts));
         String urlTail = urlParts[urlParts.length - 1];
@@ -218,12 +223,12 @@ public class API {
     }
 
     /*
-    * Parses the mTag ID from the Interaction URL.
-    * */
+     * Parses the mTag ID from the Interaction URL.
+     * */
     private String parseMTagId(String url) {
         String[] urlParts = url.split("/");
         String urlTail = urlParts[urlParts.length - 1];
-        String idAndTechType = "";
+        String idAndTechType;
 
         if (urlTail.length() <= MTAG_ID_B10_LENGTH + TECH_PREFIX_LENGTH
                 || urlTail.length() <= MTAG_ID_B36_LENGTH + TECH_PREFIX_LENGTH) {
@@ -236,6 +241,8 @@ public class API {
             // smt counter tag
             String[] smtUrlAsArray = url.split("/");
             idAndTechType = smtUrlAsArray[smtUrlAsArray.length - 2];
+        } else {  // it isn't a verifiable tag
+            return "";
         }
         Log.d(TAG, "idAndTechType: " + (idAndTechType != null ? idAndTechType : "IS NULL"));
         String mTagId = idAndTechType.substring(1);
@@ -255,7 +262,4 @@ public class API {
         Log.d(TAG, "convertIdToBase10 b10: " + idAsBase10);
         return "" + idAsBase10;
     }
-
-
-
 }
