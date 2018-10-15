@@ -42,7 +42,7 @@ public class MtagUnitTests {
     /**
      *
      */
-    public class MockActivity implements InteractionDelegate {
+    public class MockActivity implements BlueBiteInteractionDelegate {
         private API api;
 
         public MockActivity() {
@@ -104,7 +104,7 @@ public class MtagUnitTests {
      */
     public class MockAPI extends API {
 
-        public MockAPI(InteractionDelegate mDelegate) {
+        public MockAPI(BlueBiteInteractionDelegate mDelegate) {
             super(mDelegate);
         }
 

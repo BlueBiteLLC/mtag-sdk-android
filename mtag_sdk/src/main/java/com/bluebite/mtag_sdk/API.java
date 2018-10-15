@@ -32,12 +32,12 @@ import cz.msebera.android.httpclient.Header;
 
 
 /**
- * Handles parsing, verifying, and passing results from an interaction to the InteractionDelegate.
+ * Handles parsing, verifying, and passing results from an interaction to the BlueBiteInteractionDelegate.
  * */
 public class API {
     public static final String TAG = API.class.getSimpleName();
 
-    private InteractionDelegate mDelegate;
+    private BlueBiteInteractionDelegate mDelegate;
     private AsyncHttpClient client = new AsyncHttpClient();
 
     public static int SMT_COUNTER_SEGMENTS = 5;
@@ -51,7 +51,7 @@ public class API {
      */
     public static String ERROR_NON_AUTH_URL = "Invalid URL format for Interaction URL: ";
 
-    public API(InteractionDelegate mDelegate) {
+    public API(BlueBiteInteractionDelegate mDelegate) {
         this.mDelegate = mDelegate;
     }
 
@@ -147,7 +147,7 @@ public class API {
      * treated as a failure, but should be shown to the user as a potential service hiccup and not
      * a true authentication failure.
      * @param response JSON body from the registerInteraction call.
-     * @return Formatted JSON response passed to the InteractionDelegate.
+     * @return Formatted JSON response passed to the BlueBiteInteractionDelegate.
      */
     protected JSONObject handleResponse(JSONObject response) {
         JSONObject formattedResponse = new JSONObject();
