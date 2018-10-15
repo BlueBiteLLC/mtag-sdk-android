@@ -21,18 +21,12 @@ import org.json.JSONObject;
 /**
 * Implementation which will be called by the SDK upon success/failure to authenticate a tag.
 */
-public interface InteractionDelegate {
+public interface BlueBiteInteractionDelegate {
     /**
      * Called when an Interaction has been successfully registered with the BlueBite API.
-     * @param results
+     * @param results Abbreviated payload returned by the authentication API.
      */
     void interactionDataWasReceived(JSONObject results);
-
-    /*
-    *
-    *
-    *
-    * */
 
     /**
      * Called when an Interaction has failed to be registered with the BlueBite API.

@@ -30,12 +30,12 @@ import android.util.Patterns;
 import android.widget.TextView;
 
 import com.bluebite.mtag_sdk.API;
-import com.bluebite.mtag_sdk.InteractionDelegate;
+import com.bluebite.mtag_sdk.BlueBiteInteractionDelegate;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements InteractionDelegate {
+public class MainActivity extends AppCompatActivity implements BlueBiteInteractionDelegate {
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String NDEF_DISCOVERED = NfcAdapter.ACTION_NDEF_DISCOVERED;
 
