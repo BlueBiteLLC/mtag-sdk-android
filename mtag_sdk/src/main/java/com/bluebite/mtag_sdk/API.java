@@ -16,11 +16,9 @@
 package com.bluebite.mtag_sdk;
 
 
-import android.content.Context;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -33,7 +31,7 @@ import java.util.HashMap;
 import cz.msebera.android.httpclient.Header;
 
 
-/*
+/**
  * Handles parsing, verifying, and passing results from an interaction to the InteractionDelegate.
  * */
 public class API {
@@ -47,18 +45,22 @@ public class API {
     private static int MTAG_ID_B36_LENGTH = 6;
     private static int TECH_PREFIX_LENGTH = 1;
 
+    /**
+     * Error message to filter for if you want to handle a non-verifiable but otherwise
+     * valid URL.
+     */
     public static String ERROR_NON_AUTH_URL = "Invalid URL format for Interaction URL: ";
 
     public API(InteractionDelegate mDelegate) {
         this.mDelegate = mDelegate;
     }
 
-    /*
+    /**
      * Method called by an activity which will handle parsing and verifying the provided
      * interaction url.
-     *
      * Method does not return, instead passing its results to the mDelegate.
-     * */
+     * @param url Interaction URL/URL to verify.
+     */
     public void interactionWasReceived(String url) {
         Log.v(TAG, "Interaction was received with url: " + url);
         String mTagId = parseMTagId(url);
@@ -99,6 +101,11 @@ public class API {
         registerInteraction(mTagId, requestParams);
     }
 
+    /**
+     * Handles the actual POSTing to the verification route.
+     * @param mTagId ID in base 10 of the tapped tag.
+     * @param params Request parameters parsed from the Interaction URL.
+     */
     protected void registerInteraction(String mTagId, RequestParams params) {
         Log.d(TAG, "[registerInteraction]mTagId: " + mTagId + " params: " + params.toString());
 
@@ -134,7 +141,15 @@ public class API {
         client.post(targetUrl, params, responseHandler);
     }
 
-    private JSONObject handleResponse(JSONObject response) {
+    /**
+     * Receives the valid response JSON body and parses out the relevant fields.  Fields that are
+     * not found in the response body, or are null, are omitted.  A null tag_verified field is
+     * treated as a failure, but should be shown to the user as a potential service hiccup and not
+     * a true authentication failure.
+     * @param response JSON body from the registerInteraction call.
+     * @return Formatted JSON response passed to the InteractionDelegate.
+     */
+    protected JSONObject handleResponse(JSONObject response) {
         JSONObject formattedResponse = new JSONObject();
         try {
             JSONObject device = response.getJSONObject("device");
@@ -149,7 +164,7 @@ public class API {
 
         // get tagverified
         try {
-            formattedResponse.put("tagVerified", response.getString("tag_verified"));
+            formattedResponse.put("tagVerified", response.getBoolean("tag_verified"));
         } catch (JSONException e) {
             try {
                 formattedResponse.put("tagVerified", null);
@@ -184,7 +199,12 @@ public class API {
     }
 
     /**
-     Parses an Auth or HID URL into a dictionary.
+     * Parses an Auth or HID URL into a Map.
+     * @param urlParts The Interaction URL split on "/" for easier parsing.
+     * @param expectedQueryParams A Map relating the authentication API's expected param names
+     *                            and their URL query parameter key names.
+     * @return A Map of the API's expected param names with the value of their corresponding
+     * query parameter names.
      */
     private HashMap<String,String> handleAuthOrHidUrl(
             String[] urlParts, HashMap<String, String> expectedQueryParams) {
@@ -207,9 +227,13 @@ public class API {
         return params;
     }
 
+
     /**
      * Handles parsing the relevant query parameters for a counter URL.
-     * */
+     * @param urlParts The Interaction URL split on "/" for easier parsing.
+     * @return A Map of the API's expected param names with the value of their corresponding
+     * query parameter names.
+     */
     private HashMap<String,String> handleCounterUrl(String[] urlParts) {
         Log.d(TAG, "handleCounterUrl" + Arrays.toString(urlParts));
         String urlTail = urlParts[urlParts.length - 1];
@@ -221,9 +245,12 @@ public class API {
         return params;
     }
 
-    /*
-     * Parses the mTag ID from the Interaction URL.
-     * */
+    /**
+     * Takes the Interaction URL and attempts to parse the mTag ID (base 36 or base 10) from it.
+     * If it finds the ID, attempts to convert it to base 10.
+     * @param url Interaction URL to parse.
+     * @return Base 10 mTag URL as a String.
+     */
     protected String parseMTagId(String url) {
         String[] urlParts = url.split("/");
         String urlTail = urlParts[urlParts.length - 1];
@@ -243,11 +270,15 @@ public class API {
         } else {  // it isn't a verifiable tag
             return "";
         }
-        Log.d(TAG, "idAndTechType: " + (idAndTechType != null ? idAndTechType : "IS NULL"));
         String mTagId = idAndTechType.substring(1);
         return convertIdToBase10(mTagId);
     }
 
+    /**
+     * Accepts the mTag ID discovered by parseMtagID and attempts to convert it to base 10.
+     * @param mTagId Base 36 or base 10 mTag ID.
+     * @return Base 10 mTag ID as String.
+     */
     protected String convertIdToBase10(String mTagId) {
         // assume its b10 even though it probably isn't
         int idAsBase10;
@@ -258,7 +289,6 @@ public class API {
             // is base36 like we expected
             idAsBase10 = Integer.parseInt(mTagId, 36);
         }
-        Log.d(TAG, "convertIdToBase10 b10: " + idAsBase10);
         return "" + idAsBase10;
     }
 }

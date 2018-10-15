@@ -9,40 +9,25 @@
         android:id="@+id/background">
 
     <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World!"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:id="@+id/textView"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
+            android:scrollIndicators="right"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbars="vertical"
+            android:text="Ready to Scan"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintVertical_bias="0.032"/>
-
-    <Button
-            android:text="Rolling Tag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="16dp"
-            android:id="@+id/rollingKeyButton"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/basicTagButton"
-            app:layout_constraintVertical_bias="1.0"/>
-
-    <Button
-            android:text="Basic Tag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:id="@+id/basicTagButton"
-            android:layout_marginTop="364dp"
-            app:layout_constraintTop_toBottomOf="@+id/textView"
-            app:layout_constraintHorizontal_bias="0.501"/>
+            android:layout_marginBottom="24dp"
+            app:layout_constraintHorizontal_bias="0.501"
+            app:layout_constraintVertical_bias="0.035"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:elevation="8dp"
+            android:fadeScrollbars="false"
+            android:background="@android:color/transparent"/>
 
 </android.support.constraint.ConstraintLayout>
