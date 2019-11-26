@@ -63,6 +63,16 @@ public class API {
      */
     public void interactionWasReceived(String url) {
         Log.v(TAG, "Interaction was received with url: " + url);
+
+        // some tags are now using slugs instead of mtag IDs.  If we find a slug, we just need
+        // to pass the entire URL to the interaction endpoint, instead of parsing out the params.
+        String[] split = url.split("\\?")[0].split("/");
+        String slug = split[split.length - 1];
+        if (slug.length() < MTAG_ID_B36_LENGTH) {
+            formatInteraction(url);
+            return;
+        }
+
         String mTagId = parseMTagId(url);
         if (mTagId.equals("")) {
             mDelegate.interactionDidFail(ERROR_NON_AUTH_URL + url);
@@ -98,22 +108,39 @@ public class API {
         }
 
         RequestParams requestParams = new RequestParams(params);
-        registerInteraction(mTagId, requestParams);
+        formatInteraction(mTagId, requestParams);
     }
 
     /**
-     * Handles the actual POSTing to the verification route.
+     * Handles formatting the request payload for slug based URLs.
+     * @param url Unchanged interaction URL.
+     */
+    protected void formatInteraction(String url) {
+        RequestParams params = new RequestParams();
+        params.add("url", url);
+        registerInteraction(params);
+    }
+
+    /**
+     * Handles formatting the request payload for mtag ID based URLs.
      * @param mTagId ID in base 10 of the tapped tag.
      * @param params Request parameters parsed from the Interaction URL.
      */
-    protected void registerInteraction(String mTagId, RequestParams params) {
-        Log.d(TAG, "[registerInteraction]mTagId: " + mTagId + " params: " + params.toString());
-
+    protected void formatInteraction(String mTagId, RequestParams params) {
         params.put("tag_id", mTagId);
         params.put("tech", "n");
-
         Log.d(TAG, "register params: " + params.toString());
+        registerInteraction(params);
+    }
 
+    /**
+     * Handles the actual POSTing of the request to the interactions route.  Passes the success
+     * or failure along to the proper delegate.
+     * @param params RequestParams entity containing either the unchanged URL or parsed URL
+     *               depending on the structure of the received interaction URL.
+     */
+    protected void registerInteraction(RequestParams params) {
+        Log.d(TAG, "[registerInteraction]params: " + params.toString());
         String targetUrl = "https://api.mtag.io/v2/interactions";
 
         JsonHttpResponseHandler responseHandler = new JsonHttpResponseHandler() {
