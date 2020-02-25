@@ -189,6 +189,14 @@ public class API {
             }
         }
 
+        // get tamper if available
+        try {
+            formattedResponse.put("tampered", response.getBoolean("tampered"));
+        } catch (JSONException e) {
+            // if tamper isn't supported this will be either missing or null, but we don't really
+            // care to include either of those options so just move on.
+        }
+
         // get tagverified
         try {
             formattedResponse.put("tagVerified", response.getBoolean("tag_verified"));
