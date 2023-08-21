@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
 
     // keep android from complaining about Log not being mocked
     testOptions {
@@ -11,9 +11,7 @@ android {
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.1"
+        targetSdkVersion 31
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
