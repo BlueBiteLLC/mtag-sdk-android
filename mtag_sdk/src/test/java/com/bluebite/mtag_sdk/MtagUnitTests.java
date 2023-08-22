@@ -15,6 +15,9 @@
 
 package com.bluebite.mtag_sdk;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
@@ -108,7 +111,6 @@ public class MtagUnitTests {
             super(mDelegate);
         }
 
-        @Override
         protected void registerInteraction(String mTagId, RequestParams params) {
             assertEquals(mTagId, expectedMtagId);
 
@@ -174,29 +176,54 @@ public class MtagUnitTests {
     @Test
     public void testRegisterInteraction() throws Exception {
         // smt counter url
-        String counterUrl = "https://mtag.io/njaix4/0123456789x0002C42702";
         expectedParams = new HashMap<>();
         expectedParams.put("vid", "0123456789x0002C42702");
-        api.interactionWasReceived(counterUrl);
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String counterUrl = "https://mtag.io/njaix4/0123456789x0002C42702";
+                api.interactionWasReceived(counterUrl);
+            }
+        };
+
 
         // auth url
-        String rollingCodeUrl = "https://mtag.io/njaix4?id=12345678&sig=00000F1234567678";
         expectedParams = new HashMap<>();
         expectedParams.put("vid", "00000F1234567678");
         expectedParams.put("uid", "12345678");
-        api.interactionWasReceived(rollingCodeUrl);
+        mainHandler = new Handler(Looper.getMainLooper());
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+            String rollingCodeUrl = "https://mtag.io/njaix4?id=12345678&sig=00000F1234567678";
+            api.interactionWasReceived(rollingCodeUrl);
+            }
+        };
 
         // auth url with version
-        String rollingCodeUrlWithNum = "https://mtag.io/njaix4?id=12345678&num=8675309&sig=00000F1234567678";
         expectedParams.put("tag_version", "8675309");
-        api.interactionWasReceived(rollingCodeUrlWithNum);
+        mainHandler = new Handler(Looper.getMainLooper());
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String rollingCodeUrlWithNum = "https://mtag.io/njaix4?id=12345678&num=8675309&sig=00000F1234567678";
+                api.interactionWasReceived(rollingCodeUrlWithNum);
+            }
+        };
 
         // hid url
-        String hidUrl = "https://mtag.io/njaix4?tagID=12345678&tac=7C3CC5B3FEDD48EE2DA327DD";
         expectedParams = new HashMap<>();
         expectedParams.put("vid", "7C3CC5B3FEDD48EE2DA327DD");
         expectedParams.put("hid", "12345678");
-        api.interactionWasReceived(hidUrl);
+        mainHandler = new Handler(Looper.getMainLooper());
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String hidUrl = "https://mtag.io/njaix4?tagID=12345678&tac=7C3CC5B3FEDD48EE2DA327DD";
+                api.interactionWasReceived(hidUrl);
+            }
+        };
     }
 
     /**
@@ -226,7 +253,7 @@ public class MtagUnitTests {
 
         // missing location
         partialRes.put("tag_verified", "true");
-        expectedRes.put("tagVerified", "true");
+        expectedRes.put("tagVerified", true);
         res = api.handleResponse(partialRes);
         assertEquals(res.toString(), expectedRes.toString());
 
